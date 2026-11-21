@@ -64,12 +64,11 @@ function filteredTrophies() {
 
 function renderAll() {
   updateProgress(trophies, state);
+  renderNextUp(document.getElementById('nextUp'), trophies, state, selectTrophy);
   const shown = filteredTrophies();
   const earnedShown = shown.filter((t) => state.earned.includes(t.id)).length;
   document.getElementById('listMeta').textContent =
     `Showing ${shown.length} of ${trophies.length} trophies (${earnedShown} earned in this view) · 28 hidden on PSN · 0 online trophies`;
-  const nextUpEl = document.getElementById('nextUp');
-  if (nextUpEl) renderNextUp(nextUpEl, trophies, state, selectTrophy);
   renderTrophyList(document.getElementById('trophyList'), shown, state, selectedId, callbacks);
   renderDetail(document.getElementById('detailPanel'), selectedId ? byId.get(selectedId) : null, state, sourcesMap, callbacks);
   renderRoadmap(document.getElementById('roadmapStages'), trophies, state, selectTrophy);
@@ -172,10 +171,7 @@ window.addEventListener('hashchange', () => {
 if (shot === 'checklist') {
   selectedId = 28;
 } else if (shot === 'guide') {
-  // On the Spot (id 55): shortest guide among counted, non-story, unearned
-  // trophies (171 chars, target 10), so name, guide, counter and sources
-  // all fit in the detail pane at once.
-  selectedId = 55;
+  selectedId = 14;
 } else if (shot === 'roadmap') {
   currentView = 'roadmap';
 } else if (shot === 'missables') {
@@ -183,12 +179,7 @@ if (shot === 'checklist') {
 }
 if (shotMode) {
   // Counters shown in the guide shot, so the detail pane shows progress too.
-  if (shot === 'guide') {
-    state.counters = { ...state.counters, 55: 6 };
-    state.spoiler = true;
-    document.getElementById('spoilerToggle').checked = true;
-    document.getElementById('statusFilter').value = 'remaining';
-  }
+  if (shot === 'guide') state.counters = { ...state.counters, 15: 120 };
 }
 
 renderSources(document.getElementById('sourceList'), sourcesMap);

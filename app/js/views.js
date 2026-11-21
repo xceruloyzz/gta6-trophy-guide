@@ -170,34 +170,6 @@ function counterRow(trophy, state, callbacks) {
   return row;
 }
 
-export function renderNextUp(container, trophies, state, onSelect) {
-  if (!container) return;
-  container.replaceChildren();
-  const unearned = trophies
-    .filter((t) => !isEarned(state, t.id))
-    .sort((a, b) => a.stage - b.stage || a.id - b.id);
-  if (unearned.length === 0) {
-    container.append(el('p', 'next-up-done', 'All 55 earned — platinum secured.'));
-    return;
-  }
-  container.append(el('h2', 'next-up-title', 'Next up — the road from here'));
-  const row = el('div', 'next-up-chips');
-  for (const t of unearned.slice(0, 4)) {
-    const stage = STAGES.find((s) => s.stage === t.stage);
-    const chip = el('button', 'next-up-chip');
-    chip.type = 'button';
-    chip.append(el('span', 'dot ' + t.grade));
-    chip.append(el('span', 'next-up-name', spoilerHidden(t, state) ? 'Hidden story trophy' : t.name));
-    chip.append(el('span', 'next-up-stage', stage ? stage.title : 'Stage ' + t.stage));
-    if (t.count) {
-      chip.append(el('span', 'next-up-count', `${counterOf(state, t.id)} / ${t.count.target} ${t.count.label}`));
-    }
-    chip.addEventListener('click', () => onSelect(t.id));
-    row.append(chip);
-  }
-  container.append(row);
-}
-
 export function renderTrophyList(container, trophies, state, selectedId, callbacks) {
   container.replaceChildren();
   if (trophies.length === 0) {
@@ -379,4 +351,40 @@ export function renderSources(listEl, sourcesMap) {
     li.append(a);
     listEl.append(li);
   }
+}
+
+export function renderNextUp(container, trophies, state, onSelect) {
+  container.replaceChildren();
+  const remaining = trophies
+    .filter((t) => !isEarned(state, t.id))
+    .sort((a, b) => a.stage - b.stage || a.id - b.id);
+  if (remaining.length === 0) {
+    container.append(el('p', 'next-up-done', 'All 55 earned — platinum secured.'));
+    return;
+  }
+  const head = el('div', 'next-up-head');
+  head.append(el('h2', '', 'Next up — the road from here'));
+  head.append(el('span', 'next-up-hint', 'In roadmap order — tap one to open its guide.'));
+  container.append(head);
+  const row = el('div', 'next-up-chips');
+  for (const trophy of remaining.slice(0, 4)) {
+    const stageInfo = STAGES.find((s) => s.stage === trophy.stage);
+    const stageTitle = stageInfo ? stageInfo.title : 'Stage ' + trophy.stage;
+    const chip = el('button', 'next-chip');
+    chip.type = 'button';
+    chip.append(el('span', 'dot ' + trophy.grade));
+    const body = el('span', 'next-chip-body');
+    const displayName = spoilerHidden(trophy, state) ? 'Hidden story trophy' : trophy.name;
+    body.append(el('span', 'next-chip-name', displayName));
+    let metaText = 'Stage ' + trophy.stage + ' · ' + stageTitle;
+    if (trophy.count) {
+      const current = counterOf(state, trophy.id);
+      metaText += ' · ' + current.toLocaleString() + ' / ' + trophy.count.target.toLocaleString() + ' ' + trophy.count.label;
+    }
+    body.append(el('span', 'next-chip-meta', metaText));
+    chip.append(body);
+    chip.addEventListener('click', () => onSelect(trophy.id));
+    row.append(chip);
+  }
+  container.append(row);
 }
